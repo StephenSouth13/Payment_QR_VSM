@@ -25,16 +25,16 @@ go run main.go
 - `backend/`: Mã nguồn ứng dụng Go.
 
 ##🔁 Quy trình hoạt động
--Người dùng chọn sản phẩm → giỏ hàng → nhập địa chỉ → bấm Confirm & Pay.
--Frontend gọi API /api/create-order.
--Backend:
--Tạo order_id.
--Sinh QR code (base64).
--Lưu trạng thái pending.
--Frontend redirect đến /pay/[order_id]:
--Hiển thị QR code.
--Poll API /api/payment-status mỗi 3 giây.
--Khi thanh toán thành công:
--Backend cập nhật trạng thái paid.
--Gửi thông báo (email/Zalo/callback).
--Frontend hiển thị trạng thái đã thanh toán.
+- Người dùng chọn sản phẩm → giỏ hàng → nhập địa chỉ → bấm Confirm & Pay.
+- Frontend gọi API /api/create-order.
+- Backend:
+- Tạo order_id.
+- Sinh QR code (base64).
+- Lưu trạng thái pending.
+- Frontend redirect đến /pay/[order_id]:
+- Hiển thị QR code.
+- Poll API /api/payment-status mỗi 3 giây.
+- Khi thanh toán thành công:
+- Backend cập nhật trạng thái paid.
+- Gửi thông báo (email/Zalo/callback).
+- Frontend hiển thị trạng thái đã thanh toán.
