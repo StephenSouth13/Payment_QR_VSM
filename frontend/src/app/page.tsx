@@ -46,7 +46,7 @@ export default function HomePage() {
 
   const checkout = async () => {
     if (!validate()) {
-      alert("Vui lòng điền địa chỉ và thêm sản phẩm vào giỏ.");
+      alert("Please fill address and add products.");
       return;
     }
     setLoading(true);
@@ -61,9 +61,11 @@ export default function HomePage() {
       });
       if (!res.ok) throw new Error("Create order failed");
       const data = await res.json();
+      // redirect to payment page
       window.location.href = `/pay/${data.order_id}`;
     } catch (e) {
-      alert("Checkout lỗi, thử lại.");
+      console.error(e);
+      alert("Checkout error, try again.");
     } finally {
       setLoading(false);
     }
@@ -71,15 +73,13 @@ export default function HomePage() {
 
   return (
     <div className="space-y-10">
-      {/* Hero */}
       <section className="rounded-2xl bg-gradient-to-r from-indigo-50 to-white p-8 shadow text-center">
         <h1 className="text-4xl font-bold mb-2">VSM Tees</h1>
-        <p className="text-gray-600">Chọn áo ưa thích, nhập địa chỉ và thanh toán qua VietQR.</p>
+        <p className="text-gray-600">Choose, fill address, scan QR to pay.</p>
       </section>
 
-      {/* Products */}
       <section>
-        <h2 className="text-2xl font-bold mb-4">Sản phẩm</h2>
+        <h2 className="text-2xl font-bold mb-4">Products</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
           {PRODUCTS.map((p) => (
             <div key={p.id} className="bg-white rounded-xl shadow hover:shadow-lg transition p-4 flex flex-col">
@@ -90,41 +90,36 @@ export default function HomePage() {
                 onClick={() => addToCart(p)}
                 className="mt-auto bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
               >
-                Thêm vào giỏ
+                Add to cart
               </button>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Cart + Address */}
       <section className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <div className="md:col-span-3 bg-white rounded-2xl shadow p-6">
-          <h2 className="text-2xl font-bold mb-4">🛒 Giỏ hàng</h2>
-          {!cart.length ? (
-            <p className="text-gray-500">Chưa có sản phẩm.</p>
-          ) : (
+          <h2 className="text-2xl font-bold mb-4">🛒 Cart</h2>
+          {!cart.length ? <p className="text-gray-500">No items.</p> : (
             <>
               <ul className="divide-y">
                 {cart.map((c) => (
                   <li key={c.id} className="py-3 flex items-center justify-between">
                     <div>
                       <p className="font-medium">{c.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {c.price.toLocaleString()} VND x {c.qty}
-                      </p>
+                      <p className="text-sm text-gray-500">{c.price.toLocaleString()} VND x {c.qty}</p>
                     </div>
                     <div className="flex items-center gap-3">
                       <button onClick={() => dec(c.id)} className="px-3 py-1 rounded border">-</button>
                       <span>{c.qty}</span>
                       <button onClick={() => inc(c.id)} className="px-3 py-1 rounded border">+</button>
-                      <button onClick={() => removeItem(c.id)} className="text-red-600 hover:underline">Xóa</button>
+                      <button onClick={() => removeItem(c.id)} className="text-red-600 hover:underline">Remove</button>
                     </div>
                   </li>
                 ))}
               </ul>
               <div className="flex items-center justify-between mt-4">
-                <span className="text-lg font-semibold">Tổng</span>
+                <span className="text-lg font-semibold">Total</span>
                 <span className="text-xl font-bold">{total.toLocaleString()} VND</span>
               </div>
             </>
@@ -132,23 +127,15 @@ export default function HomePage() {
         </div>
 
         <div className="md:col-span-2 bg-white rounded-2xl shadow p-6">
-          <h2 className="text-2xl font-bold mb-4">📦 Địa chỉ giao hàng</h2>
+          <h2 className="text-2xl font-bold mb-4">📦 Shipping address</h2>
           <div className="space-y-3">
-            <input className="w-full border rounded px-3 py-2" placeholder="Họ tên"
-              value={addr.fullName} onChange={(e) => setAddr({ ...addr, fullName: e.target.value })} />
-            <input className="w-full border rounded px-3 py-2" placeholder="Số điện thoại"
-              value={addr.phone} onChange={(e) => setAddr({ ...addr, phone: e.target.value })} />
-            <textarea className="w-full border rounded px-3 py-2" placeholder="Địa chỉ"
-              value={addr.address} onChange={(e) => setAddr({ ...addr, address: e.target.value })} />
-            <input className="w-full border rounded px-3 py-2" placeholder="Ghi chú (tuỳ chọn)"
-              value={addr.note || ""} onChange={(e) => setAddr({ ...addr, note: e.target.value })} />
+            <input className="w-full border rounded px-3 py-2" placeholder="Full name" value={addr.fullName} onChange={(e)=>setAddr({...addr, fullName:e.target.value})}/>
+            <input className="w-full border rounded px-3 py-2" placeholder="Phone" value={addr.phone} onChange={(e)=>setAddr({...addr, phone:e.target.value})}/>
+            <textarea className="w-full border rounded px-3 py-2" placeholder="Address" value={addr.address} onChange={(e)=>setAddr({...addr, address:e.target.value})}/>
+            <input className="w-full border rounded px-3 py-2" placeholder="Note (optional)" value={addr.note||""} onChange={(e)=>setAddr({...addr, note:e.target.value})}/>
           </div>
-          <button
-            onClick={checkout}
-            disabled={loading || cart.length === 0}
-            className="mt-4 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
-          >
-            {loading ? "Đang xử lý..." : "Xác nhận & Thanh toán →"}
+          <button onClick={checkout} disabled={loading || cart.length===0} className="mt-4 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 disabled:opacity-50">
+            {loading ? "Processing..." : "Confirm & Pay →"}
           </button>
         </div>
       </section>
