@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
 
@@ -14,9 +14,10 @@ type StatusRes = {
 
 export default function PayPage() {
   const { orderId } = useParams<{ orderId: string }>();
+  const router = useRouter();
   const [st, setSt] = useState<StatusRes | null>(null);
 
-  // Fetch status 1 lần
+  // Fetch status once
   useEffect(() => {
     (async () => {
       const r = await fetch(`${API_BASE}/api/payment-status?orderId=${orderId}`);
@@ -24,14 +25,34 @@ export default function PayPage() {
     })();
   }, [orderId]);
 
-  // Poll mỗi 3s
+  // Poll every 3 seconds
   useEffect(() => {
     const t = setInterval(async () => {
       const r = await fetch(`${API_BASE}/api/payment-status?orderId=${orderId}`);
-      if (r.ok) setSt(await r.json());
+      if (r.ok) {
+        const data = await r.json();
+        setSt(data);
+        if (data.status === "paid") {
+          setTimeout(() => {
+            router.push("/order-success");
+          }, 2000); // wait 2s before redirect
+        }
+      }
     }, 3000);
     return () => clearInterval(t);
   }, [orderId]);
+
+  // Timeout after 10 minutes
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const cart = localStorage.getItem("cart");
+      if (cart) {
+        localStorage.setItem("cart_backup", cart);
+      }
+      router.push("/");
+    }, 10 * 60 * 1000); // 10 minutes
+    return () => clearTimeout(timeout);
+  }, []);
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 p-6">

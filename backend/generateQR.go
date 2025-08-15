@@ -1,24 +1,23 @@
 package main
 
 import (
-	"encoding/base64"
-	"fmt"
+    "encoding/base64"
+    "fmt"
 
-	qrcode "github.com/skip2/go-qrcode"
+    "github.com/skip2/go-qrcode"
 )
 
-// generateVietQR tạo QR code dạng base64 cho thanh toán
-func generateVietQR(accountNumber, bankCode, amount, note string) (string, error) {
-	// Dữ liệu VietQR cơ bản (có thể thay bằng chuẩn VietQR chính thức)
-	qrData := fmt.Sprintf("vietqr://%s/%s?amount=%s&note=%s", bankCode, accountNumber, amount, note)
+func generateVietQR(amount int, description string) (string, error) {
+    account := "0001244698984"
+    bank := "MB"
+    name := "Quách Thành Long"
 
-	// Tạo QR code PNG (256px)
-	qrBytes, err := qrcode.Encode(qrData, qrcode.Medium, 256)
-	if err != nil {
-		return "", err
-	}
+    content := fmt.Sprintf("bank:%s|acc:%s|name:%s|amount:%d|desc:%s", bank, account, name, amount, description)
 
-	// Convert sang base64 để frontend hiển thị
-	base64QR := base64.StdEncoding.EncodeToString(qrBytes)
-	return "data:image/png;base64," + base64QR, nil
+    png, err := qrcode.Encode(content, qrcode.Medium, 256)
+    if err != nil {
+        return "", err
+    }
+
+    return "data:image/png;base64," + base64.StdEncoding.EncodeToString(png), nil
 }
