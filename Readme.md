@@ -1,2 +1,3 @@
 Quy trình
-frontend/public/process.png
+
+![alt text](image.png)
